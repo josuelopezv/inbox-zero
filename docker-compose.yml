@@ -9,27 +9,19 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-inboxzero}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
     volumes:
-      - database-data:/var/lib/postgresql/data/
-    ports:
-      - ${POSTGRES_PORT:-5432}:5432
+      - database-data:/var/lib/postgresql
     networks:
       - inbox-zero-network
 
   redis:
     image: redis
-    ports:
-      - ${REDIS_PORT:-6380}:6379
     volumes:
       - database-data:/data
     networks:
       - inbox-zero-network
 
   serverless-redis-http:
-    ports:
-      - "${REDIS_HTTP_PORT:-8079}:80"
     image: hiett/serverless-redis-http:latest
-    env_file:
-      - ./apps/web/.env
     environment:
       SRH_MODE: env
       SRH_TOKEN: ${UPSTASH_REDIS_TOKEN}
@@ -47,13 +39,9 @@ services:
       dockerfile: ./docker/Dockerfile.prod
       args:
         NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
-    env_file:
-      - ./apps/web/.env
     depends_on:
       - db
       - redis
-    ports:
-      - ${WEB_PORT:-3000}:3000
     networks:
       - inbox-zero-network
     environment:
